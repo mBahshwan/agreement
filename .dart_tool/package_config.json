@@ -296,6 +296,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "intl",
+      "rootUri": "file:///C:/Users/Master/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.20.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "io",
       "rootUri": "file:///C:/Users/Master/AppData/Local/Pub/Cache/hosted/pub.dev/io-1.0.5",
       "packageUri": "lib/",
@@ -620,7 +626,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-04-23T21:48:24.138497Z",
+  "generated": "2025-04-26T14:02:57.168279Z",
   "generator": "pub",
   "generatorVersion": "3.6.2",
   "flutterRoot": "file:///F:/development/flutter",

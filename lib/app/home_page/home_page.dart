@@ -1,7 +1,11 @@
 import 'package:agreement_app/app/agreement/create_agreement.dart';
 import 'package:agreement_app/app/home_page/home_view_model.dart';
 import 'package:agreement_app/app/models/userModel.dart';
+import 'package:agreement_app/app/visitors_page/visitors_page.dart';
+import 'package:agreement_app/core/constant/firebase_client.dart';
 import 'package:agreement_app/core/helpers.dart';
+import 'package:agreement_app/core/widgets/agreement_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -54,8 +58,31 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final agreements = ref.watch(homeViewModelProvider);
+    final agreementProvider = ref.watch(homeViewModelProvider.notifier);
+
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
+      drawer: Drawer(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 20,
+            ),
+            Card(
+              color: Colors.indigo[200]!.withOpacity(0.3),
+              child: ListTile(
+                leading: Icon(Icons.person),
+                title: Text(
+                  'Visitors',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                onTap: () => Helpers.navigateToPush(context, VisitorsPage()),
+              ),
+            )
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: const Text('Home Page'),
       ),
@@ -63,117 +90,137 @@ class _HomePageState extends ConsumerState<HomePage> {
           loading: () => const Center(
                 child: CircularProgressIndicator(),
               ),
-          data: (data) => Padding(
+          data: (data) {
+            final activeAgreements = data.agreements!
+                .where((a) => a.state == AgreementState.ACTIVE)
+                .toList();
+            return RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(homeViewModelProvider.notifier).getAgreements(),
+              child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 16),
-                    ListView.builder(
-                      itemCount: data.agreements?.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      alignment: Alignment.center,
-                                      height: 30,
-                                      width: 60,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Text(
-                                        _getAgreementStateText(
-                                            data.agreements![index].state ??
-                                                AgreementState.PENDING),
-                                        style: textTheme.bodySmall
-                                            ?.copyWith(color: Colors.white),
-                                      ),
-                                    ),
-                                    Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Text(
-                                          data.agreements?[index].bicycleName
-                                                  .toString() ??
-                                              '',
-                                          style: textTheme.titleMedium,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Duration: ${data.agreements?[index].duration.toString() ?? ''}',
-                                      style: textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                ),
-                                Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Text(
-                                      'Start: ${_formatDateTime(data.agreements?[index].timeStart)}',
-                                      style: textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                ),
-                                Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Text(
-                                      'End: ${_formatDateTime(data.agreements?[index].timeEnd)}',
-                                      style: textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 16),
+                      ListView.builder(
+                        itemCount: activeAgreements.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final agreement = activeAgreements[index];
+
+                          final isActive = _isAgreementActive(agreement);
+
+                          return AgreementCard(
+                              agreement: agreement,
+                              agreementState: _getAgreementStateText(
+                                  agreement.state ?? AgreementState.ACTIVE),
+                              stateColor:
+                                  isActive ? Colors.green : Colors.orange,
+                              startDate:
+                                  '${_formatDateTime(agreement.timeStart)}',
+                              endDate:
+                                  '${{_formatDateTime(agreement.timeEnd)}}',
+                              onTap: () async {
+                                try {
+                                  // 1. Get reference to the visitor document
+                                  final visitorRef = FirebaseFirestore.instance
+                                      .collection('visitors')
+                                      .doc(agreement.userId.toString());
+
+                                  // 2. Get current agreements
+                                  final doc = await visitorRef.get();
+                                  final allAgreements =
+                                      List<Map<String, dynamic>>.from(
+                                          doc['agreements'] ?? []);
+
+                                  // 3. Find the EXACT agreement in Firestore by unique identifier
+                                  final clickedAgreement =
+                                      agreement; // The agreement from your card
+                                  final firestoreIndex =
+                                      allAgreements.indexWhere((a) =>
+                                          a['bicycleName'] ==
+                                              clickedAgreement.bicycleName &&
+                                          a['userId'] ==
+                                              clickedAgreement.userId);
+
+                                  if (firestoreIndex == -1)
+                                    throw Exception(
+                                        'Agreement not found in Firestore');
+
+                                  // 4. Create updated agreement with ALL original fields
+                                  final updatedAgreement = {
+                                    ...allAgreements[
+                                        firestoreIndex], // Keep all original data
+                                    'state': agreementStateValues
+                                        .reverse[AgreementState.EXPIRED],
+                                  };
+
+                                  // 5. Update using transaction for safety
+                                  await FirebaseFirestore.instance
+                                      .runTransaction((transaction) async {
+                                    transaction.update(visitorRef, {
+                                      'agreements': FieldValue.arrayRemove(
+                                          [allAgreements[firestoreIndex]])
+                                    });
+                                    transaction.update(visitorRef, {
+                                      'agreements': FieldValue.arrayUnion(
+                                          [updatedAgreement])
+                                    });
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Successfully updated agreement')),
+                                  );
+                                  Helpers.navigateToPushAndRemoveUntil(
+                                      context, HomePage());
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text('Error: ${e.toString()}')),
+                                  );
+                                }
+                              });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            );
+          },
           error: (error, stack) {
             print(error);
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline,
-                        color: Colors.red, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      error.toString(),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'create new agreement by clicking the button below',
-                      style: Theme.of(context).textTheme.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+            return RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(homeViewModelProvider.notifier).getAgreements(),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: Colors.red, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        error.toString(),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'create new agreement by clicking the button below',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -187,5 +234,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       // SingleChildScrollView(child: Column(children: [ ],),)
     );
+  }
+
+  bool _isAgreementActive(Agreement agreement) {
+    final now = DateTime.now();
+    final start = agreement.timeStart ?? now;
+    final end = agreement.timeEnd ?? now;
+
+    return now.isAfter(start) && now.isBefore(end);
   }
 }

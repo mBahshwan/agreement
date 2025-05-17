@@ -7,7 +7,7 @@ part of 'create_agreement_view_model.dart';
 // **************************************************************************
 
 String _$createAgreementViewModelHash() =>
-    r'f5f65a04a0b9d1efc096c7adc8dd3f0d85979ce6';
+    r'bb16c65da0d5669c7ba3520f8ecc130b6fed43f7';
 
 /// See also [CreateAgreementViewModel].
 @ProviderFor(CreateAgreementViewModel)

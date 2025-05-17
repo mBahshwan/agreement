@@ -38,8 +38,13 @@ class FirebaseClient {
     }
   }
 
+  static Future<void> updateSpecificAgreement(
+      String path, Map<String, dynamic> data) {
+    return FirebaseFirestore.instance.doc(path).update(data);
+  }
+
   // Edit a document in a collection
-  Future<void> editDocument(String collectionPath, String documentId,
+  static Future<void> editDocument(String collectionPath, String documentId,
       Map<String, dynamic> data) async {
     try {
       await _firestore.collection(collectionPath).doc(documentId).update(data);

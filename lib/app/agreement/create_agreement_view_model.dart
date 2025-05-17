@@ -18,41 +18,50 @@ class CreateAgreementViewModel extends _$CreateAgreementViewModel {
   Future<void> createAgreement(
       UserModel newAgreement, BuildContext context) async {
     try {
-      // 1. Fetch the current user data from Firestore
-      // Fetch the current user data from Firestore using a proper fetch method
-      final currentUserDataList = await FirebaseClient.getDocuments(
-        'visitors',
-      );
+      // 1. Get all documents to find if our specific user exists
+      final allDocuments = await FirebaseClient.getDocuments('visitors');
 
-      if (currentUserDataList == null || currentUserDataList.isEmpty) {
-        throw Exception('User not found');
+      // 2. Find the document with matching userId
+      Map<String, dynamic>? existingUserDoc;
+      for (var doc in allDocuments) {
+        if (doc['userId'] == newAgreement.userId) {
+          existingUserDoc = doc;
+          break;
+        }
       }
 
-      // Assuming you want the first document from the list
-      final currentUserData = currentUserDataList.first;
+      UserModel updatedUser;
 
-      // 2. Parse the existing user model
-      final currentUser = UserModel.fromFirestore(currentUserData);
+      if (existingUserDoc != null) {
+        // 3. Document exists - update existing agreements
+        final currentUser = UserModel.fromFirestore(existingUserDoc);
+        updatedUser = currentUser.copyWith(
+          agreements: [
+            ...(currentUser.agreements ?? []),
+            ...(newAgreement.agreements ?? []),
+          ],
+        );
+      } else {
+        // 4. Document doesn't exist - use the new agreement as is
+        updatedUser = newAgreement;
+      }
 
-      // 3. Create an updated user with the new agreement appended
-      final updatedUser = currentUser.copyWith(
-        agreements: [
-          ...(currentUser.agreements ?? []), // Keep existing agreements
-          ...(newAgreement.agreements ?? []), // Add new agreement(s)
-        ],
-      );
-
-      // 4. Update Firestore with the modified user data
+      // 5. Update or create the document
       await FirebaseClient.setDocument(
         'visitors',
         updatedUser.toMap(),
         updatedUser.userId!,
       );
 
-      // 5. Navigate after successful update
+      // 6. Navigate after successful update
       Helpers.navigateToPushAndRemoveUntil(context, HomePage());
     } catch (e) {
       state = AsyncError(e.toString(), StackTrace.empty);
     }
+  }
+
+  void setDuration(String newDuration) {
+    // Ensure we have valid data
+    state = AsyncData(UserModel(duration: newDuration));
   }
 }

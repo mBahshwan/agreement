@@ -1,6 +1,9 @@
+import 'package:agreement_app/app/home_page/home_page.dart';
 import 'package:agreement_app/app/models/userModel.dart';
 import 'package:agreement_app/core/constant/firebase_client.dart';
+import 'package:agreement_app/core/helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_view_model.g.dart';
@@ -27,6 +30,16 @@ class HomeViewModel extends _$HomeViewModel {
           Agreements(agreements: agreements));
     } catch (e) {
       state = AsyncError(e.toString(), StackTrace.empty);
+    }
+  }
+
+  Future<void> updateAgreement(String docomentId, Map<String, dynamic> data,
+      BuildContext context) async {
+    try {
+      await FirebaseClient.editDocument('visitors', docomentId, data);
+      Helpers.navigateToPushAndRemoveUntil(context, HomePage());
+    } catch (e) {
+      print('Error : $e');
     }
   }
 }

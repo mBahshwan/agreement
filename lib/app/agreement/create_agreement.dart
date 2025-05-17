@@ -1,6 +1,7 @@
 import 'package:agreement_app/app/agreement/create_agreement_view_model.dart';
 import 'package:agreement_app/app/models/userModel.dart';
 import 'package:agreement_app/core/widgets/custom_text_field.dart';
+import 'package:agreement_app/core/widgets/duration_sluts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -53,10 +54,6 @@ class CreateAgreementPage extends ConsumerWidget {
                 controller: vistorIdController,
                 textInputType: TextInputType.number,
               ),
-              Divider(
-                color: Colors.grey,
-                thickness: 1,
-              ),
               const SizedBox(height: 16),
               Text(
                 'Agreement Details',
@@ -73,10 +70,36 @@ class CreateAgreementPage extends ConsumerWidget {
                 controller: descriptionController,
               ),
               const SizedBox(height: 16),
-              CustomTextField(
-                lableText: 'duratuion in minutes',
-                controller: durationController,
-                textInputType: TextInputType.number,
+              Row(
+                children: [
+                  DurationSluts(
+                      onTap: () {
+                        durationController.text = '30';
+                        print(durationController.text);
+
+                        createAgreementProvider
+                            .setDuration(durationController.text);
+                        // print(
+                        //     "the duration : ${createAgreementViewModel.value!.duration} ");
+                      },
+                      durationController: durationController,
+                      value: '30',
+                      text: '30 mins'),
+                  SizedBox(width: 10),
+                  DurationSluts(
+                      onTap: () {
+                        durationController.text = '60';
+                        print(durationController.text);
+
+                        createAgreementProvider
+                            .setDuration(durationController.text);
+                        // print(
+                        //     "the duration : ${createAgreementViewModel.value!.duration} ");
+                      },
+                      durationController: durationController,
+                      value: '60',
+                      text: '60 mins')
+                ],
               ),
               ElevatedButton(
                 onPressed: () {

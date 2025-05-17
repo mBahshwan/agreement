@@ -6,28 +6,30 @@ class UserModel {
   int? userId;
   int? visitingCount;
   List<Agreement>? agreements;
+  String? duration;
 
-  UserModel({
-    this.name,
-    this.phoneNumber,
-    this.userId,
-    this.visitingCount,
-    this.agreements,
-  });
+  UserModel(
+      {this.name,
+      this.phoneNumber,
+      this.userId,
+      this.visitingCount,
+      this.agreements,
+      this.duration});
   UserModel copyWith({
     String? name,
     int? phoneNumber,
     int? userId,
     int? visitingCount,
     List<Agreement>? agreements,
+    String? duration,
   }) {
     return UserModel(
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      name: name ?? this.name,
-      userId: userId ?? this.userId,
-      visitingCount: visitingCount ?? this.visitingCount,
-      agreements: agreements ?? this.agreements,
-    );
+        phoneNumber: phoneNumber ?? this.phoneNumber,
+        name: name ?? this.name,
+        userId: userId ?? this.userId,
+        visitingCount: visitingCount ?? this.visitingCount,
+        agreements: agreements ?? this.agreements,
+        duration: duration ?? this.duration);
   }
 
   // Factory method to create a UserModel from a Firestore document
@@ -50,7 +52,7 @@ class UserModel {
       'name': name,
       'userId': userId,
       'phoneNumber': phoneNumber,
-      'visitingCount': visitingCount,
+      'visitingCount': agreements?.length ?? 1,
       'agreements': agreements?.map((agreement) => agreement.toMap()).toList(),
     };
   }

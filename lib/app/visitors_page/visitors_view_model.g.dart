@@ -6,7 +6,7 @@ part of 'visitors_view_model.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$visitorsViewModelHash() => r'1302e2dc5fd9800b3e92ed15c1bed1625334f0f7';
+String _$visitorsViewModelHash() => r'287551396aaa88f57b3ffd41b87b1a25f0c3708f';
 
 /// See also [VisitorsViewModel].
 @ProviderFor(VisitorsViewModel)

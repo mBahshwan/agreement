@@ -1,4 +1,5 @@
 import 'package:agreement_app/app/agreement/create_agreement.dart';
+import 'package:agreement_app/app/bicycle/add_bicycle_page.dart';
 import 'package:agreement_app/app/home_page/home_view_model.dart';
 import 'package:agreement_app/app/models/userModel.dart';
 import 'package:agreement_app/app/visitors_page/visitors_page.dart';
@@ -79,6 +80,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 onTap: () => Helpers.navigateToPush(context, VisitorsPage()),
               ),
+            ),
+            Card(
+              color: Colors.indigo[200]!.withOpacity(0.3),
+              child: ListTile(
+                leading: Icon(Icons.bike_scooter_rounded),
+                title: Text(
+                  'Add Bicycle',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                onTap: () => Helpers.navigateToPush(context, AddBicyclePage()),
+              ),
             )
           ],
         ),
@@ -141,11 +153,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   final clickedAgreement =
                                       agreement; // The agreement from your card
                                   final firestoreIndex =
-                                      allAgreements.indexWhere((a) =>
-                                          a['bicycleName'] ==
-                                              clickedAgreement.bicycleName &&
-                                          a['userId'] ==
-                                              clickedAgreement.userId);
+                                      allAgreements.indexWhere((a) {
+                                    // Convert Firestore Timestamp to DateTime for comparison
+                                    final firestoreDateTime = a['timeStart']
+                                            is Timestamp
+                                        ? (a['timeStart'] as Timestamp).toDate()
+                                        : a['timeStart'] as DateTime?;
+
+                                    return firestoreDateTime != null &&
+                                        clickedAgreement.timeStart != null &&
+                                        firestoreDateTime.isAtSameMomentAs(
+                                            clickedAgreement.timeStart!) &&
+                                        a['userId'] == clickedAgreement.userId;
+                                  });
 
                                   if (firestoreIndex == -1)
                                     throw Exception(

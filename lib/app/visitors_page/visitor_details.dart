@@ -1,14 +1,17 @@
+import 'package:agreement_app/app/agreement/create_agreement.dart';
 import 'package:agreement_app/app/models/userModel.dart';
+import 'package:agreement_app/app/visitors_page/visitors_view_model.dart';
 import 'package:agreement_app/core/widgets/agreement_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class VisitorDetails extends StatelessWidget {
+class VisitorDetails extends ConsumerWidget {
   final List<Agreement> agreements;
   const VisitorDetails({super.key, required this.agreements});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Visitor Details'),
@@ -25,14 +28,24 @@ class VisitorDetails extends StatelessWidget {
             itemBuilder: (context, index) {
               final agreement = agreements[index];
               final isActive = _isAgreementActive(agreement);
-              return AgreementCard(
-                  agreement: agreement,
-                  agreementState: _getAgreementStateText(
-                      agreement.state ?? AgreementState.ACTIVE),
-                  stateColor: isActive ? Colors.green : Colors.orange,
-                  startDate: '${_formatDateTime(agreement.timeStart)}',
-                  endDate: '${{_formatDateTime(agreement.timeEnd)}}',
-                  onTap: () {});
+              return FutureBuilder<UserModel?>(
+                future: ref
+                    .read(visitorsViewModelProvider.notifier)
+                    .fetchVisitorById(agreement.userId.toString()),
+                builder: (context, snapshot) {
+                  return AgreementCard(
+                    agreement: agreement,
+                    agreementState: _getAgreementStateText(
+                        agreement.state ?? AgreementState.ACTIVE),
+                    stateColor: isActive ? Colors.green : Colors.orange,
+                    startDate: '${_formatDateTime(agreement.timeStart)}',
+                    endDate: '${_formatDateTime(agreement.timeEnd)}',
+                    onTap: () {},
+                    userModel: snapshot.data,
+                    isCheckShown: false,
+                  );
+                },
+              );
             },
           ))
         ],

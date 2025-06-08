@@ -22,4 +22,28 @@ class VisitorsViewModel extends _$VisitorsViewModel {
       print('error $e');
     }
   }
+
+  Future<UserModel?> fetchVisitorById(String id) async {
+    try {
+      final doc = await FirebaseClient.getDocumentById('visitors', id);
+      if (doc != null) {
+        return UserModel.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      print('error $e');
+      return null;
+    }
+  }
+
+  Future<void> getVisitorById() async {
+    try {
+      final visitors = await FirebaseClient.getDocuments('visitors');
+      final userModelList =
+          visitors.map((element) => UserModel.fromFirestore(element)).toList();
+      state = userModelList;
+    } catch (e) {
+      print('error $e');
+    }
+  }
 }

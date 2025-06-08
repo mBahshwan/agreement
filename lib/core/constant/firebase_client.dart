@@ -16,6 +16,22 @@ class FirebaseClient {
     }
   }
 
+  // Retrieve a single document by its ID from a collection
+  static Future<Map<String, dynamic>?> getDocumentById(
+      String collectionPath, String documentId) async {
+    try {
+      final docSnapshot =
+          await _firestore.collection(collectionPath).doc(documentId).get();
+      if (docSnapshot.exists) {
+        return {'id': docSnapshot.id, ...docSnapshot.data()!};
+      } else {
+        return null;
+      }
+    } catch (e) {
+      throw Exception('Error retrieving document by ID: $e');
+    }
+  }
+
   // Add a document to a collection
   static Future<void> addDocument(
       String collectionPath, Map<String, dynamic> data) async {

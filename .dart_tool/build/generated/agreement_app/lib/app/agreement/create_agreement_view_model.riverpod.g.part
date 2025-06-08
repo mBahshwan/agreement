@@ -1,0 +1,23 @@
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+String _$createAgreementViewModelHash() =>
+    r'97eafbb71413fddb1d10a181e23a643d8de05a2b';
+
+/// See also [CreateAgreementViewModel].
+@ProviderFor(CreateAgreementViewModel)
+final createAgreementViewModelProvider = AutoDisposeNotifierProvider<
+    CreateAgreementViewModel, AsyncValue<UserModel>>.internal(
+  CreateAgreementViewModel.new,
+  name: r'createAgreementViewModelProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$createAgreementViewModelHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$CreateAgreementViewModel = AutoDisposeNotifier<AsyncValue<UserModel>>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

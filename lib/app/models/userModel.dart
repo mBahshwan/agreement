@@ -87,6 +87,8 @@ class Agreements {
 class Agreement {
   String? bicycleName;
   String? description;
+  List<String>? bicycleNames;
+  List<String>? bicycleDesctiptions;
   int? duration;
   DateTime? timeStart;
   DateTime? timeEnd;
@@ -96,6 +98,8 @@ class Agreement {
   Agreement({
     this.bicycleName,
     this.description,
+    this.bicycleNames,
+    this.bicycleDesctiptions,
     this.timeStart,
     this.duration,
     this.timeEnd,
@@ -105,6 +109,8 @@ class Agreement {
   Agreement copyWith({
     String? bicycleName,
     String? description,
+    List<String>? bicycleNames,
+    List<String>? bicycleDesctiptions,
     DateTime? timeStart,
     DateTime? timeEnd,
     int? duration,
@@ -114,6 +120,8 @@ class Agreement {
     return Agreement(
       bicycleName: bicycleName ?? this.bicycleName,
       description: description ?? this.description,
+      bicycleDesctiptions: bicycleDesctiptions ?? this.bicycleDesctiptions,
+      bicycleNames: bicycleNames ?? this.bicycleNames,
       timeStart: timeStart ?? this.timeStart,
       timeEnd: timeEnd ?? this.timeEnd,
       userId: userId ?? this.userId,
@@ -122,11 +130,25 @@ class Agreement {
     );
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      'bicycleNames': bicycleNames,
+      'bicycleDescriptions': bicycleDesctiptions,
+      'duration': duration,
+      'userId': userId,
+      'timeStart': timeStart != null ? Timestamp.fromDate(timeStart!) : null,
+      'timeEnd': timeEnd != null ? Timestamp.fromDate(timeEnd!) : null,
+      'state': state != null ? agreementStateValues.reverse[state] : null,
+    };
+  }
+
   factory Agreement.fromFirestore(Map<String, dynamic> doc) {
     Map<String, dynamic> data = doc;
     return Agreement(
-      bicycleName: data['bicycleName'] ?? '',
-      description: data['description'] ?? '',
+      bicycleNames:
+          (data['bicycleNames'] as List<dynamic>?)?.cast<String>() ?? [],
+      bicycleDesctiptions:
+          (data['bicycleDescriptions'] as List<dynamic>?)?.cast<String>() ?? [],
       duration: data['duration'] ?? 0,
       timeStart: (data['timeStart'] as Timestamp?)?.toDate(),
       timeEnd: (data['timeEnd'] as Timestamp?)?.toDate(),
@@ -135,19 +157,6 @@ class Agreement {
           ? agreementStateValues.map[data['state']]
           : AgreementState.PENDING,
     );
-  }
-
-  // Method to convert Agreement to a map for saving to Firestore
-  Map<String, dynamic> toMap() {
-    return {
-      'bicycleName': bicycleName,
-      'description': description,
-      'duration': duration,
-      'userId': userId,
-      'timeStart': timeStart != null ? Timestamp.fromDate(timeStart!) : null,
-      'timeEnd': timeEnd != null ? Timestamp.fromDate(timeEnd!) : null,
-      'state': state != null ? agreementStateValues.reverse[state] : null,
-    };
   }
 }
 

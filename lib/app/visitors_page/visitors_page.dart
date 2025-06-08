@@ -22,7 +22,8 @@ class _VisitorsPageState extends ConsumerState<VisitorsPage> {
 
     setState(() {
       _filteredVisitors = list.where((visitor) {
-        return visitor.userId!.toString().startsWith(query);
+        return visitor.userId!.toString().startsWith(query) ||
+            visitor.phoneNumber!.toString().startsWith(query);
       }).toList();
     });
   }
@@ -57,7 +58,7 @@ class _VisitorsPageState extends ConsumerState<VisitorsPage> {
         child: Column(
           children: [
             CustomTextField(
-              lableText: 'Search by User ID...',
+              lableText: 'Search by User ID or Phone no...',
               controller: _search,
               prefixIcon: Icon(Icons.search),
               onChanged: (value) => _filterVisitors(_search.text, visitors),

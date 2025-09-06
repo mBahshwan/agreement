@@ -25,15 +25,20 @@ class AddBicyclePage extends ConsumerWidget {
                 controller: _controller,
                 onChanged: (value) => ref
                     .read(addBicycleViewModelProvider.notifier)
-                    .setName(value),
+                    .setName(_controller.text),
               ),
               const SizedBox(
                 height: 20,
               ),
               ElevatedButton(
-                onPressed: () => ref
-                    .watch(addBicycleViewModelProvider.notifier)
-                    .addBicycle(context),
+                onPressed: () {
+                  ref
+                      .read(addBicycleViewModelProvider.notifier)
+                      .setName(_controller.text);
+                  ref
+                      .watch(addBicycleViewModelProvider.notifier)
+                      .addBicycle(context);
+                },
                 child: const Text('Add bicycle'),
               )
             ],

@@ -122,6 +122,7 @@ class _CreateAgreementPageState extends ConsumerState<CreateAgreementPage> {
         // You can also update your providers with userModel data
         // ref.read(createAgreementViewModelProvider.notifier).setUserData(widget.userModel!);
       }
+      ref.refresh(bicyclesProvider);
     });
   }
 
